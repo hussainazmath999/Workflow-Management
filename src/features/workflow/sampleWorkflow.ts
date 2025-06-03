@@ -1,5 +1,3 @@
-// Final sampleWorkflow.ts with YES/NO labeled edges for decision branching
-
 import type { WorkflowNodeData, WorkflowEdge } from './types'
 export const sampleNodes: WorkflowNodeData[] = [
   {
@@ -34,24 +32,25 @@ export const sampleNodes: WorkflowNodeData[] = [
     id: 'scheduleInterview',
     type: 'action',
     label: 'Schedule Interview',
-    // Move left and down
-    position: { x: -100, y: 500 },  // Changed from { x: 0, y: 450 }
+    position: { x: -100, y: 500 },
     config: { tool: 'Calendly', duration: '30min' },
+    isCollapsed: false,  // Add this
+    hidden: false        // Add this
   },
   {
     id: 'sendRejection',
     type: 'action',
     label: 'Send Rejection Email',
-    // Move right and down
-    position: { x: 300, y: 500 },  // Changed from { x: 200, y: 450 }
+    position: { x: 300, y: 500 },
     config: { template: 'rejection_email', service: 'SendGrid' },
+    isCollapsed: false,  // Add this
+    hidden: false        // Add this
   },
   {
     id: 'end',
     type: 'terminal',
     label: 'Process Complete',
-    // Move down further
-    position: { x: 100, y: 700 },  // Changed from { x: 100, y: 600 }
+    position: { x: 100, y: 700 },  
     config: { status: 'done' },
   },
 ]

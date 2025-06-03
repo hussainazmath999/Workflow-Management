@@ -1,8 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit' // Add type-only import
 import type { WorkflowState, WorkflowNodeData, WorkflowEdge } from './types'
 
-// Add the missing function
 function getDescendantIds(startId: string, edges: WorkflowEdge[]): Set<string> {
   const descendants = new Set<string>()
   const queue = [startId]
@@ -13,8 +12,10 @@ function getDescendantIds(startId: string, edges: WorkflowEdge[]): Set<string> {
     
     for (const edge of edges) {
       if (edge.source === current) {
-        descendants.add(edge.target)
-        queue.push(edge.target)
+        if (!descendants.has(edge.target)) {
+          descendants.add(edge.target)
+          queue.push(edge.target)
+        }
       }
     }
   }
@@ -34,7 +35,11 @@ const workflowSlice = createSlice({
   initialState,
   reducers: {
     loadWorkflow: (state, action: PayloadAction<{ nodes: WorkflowNodeData[]; edges: WorkflowEdge[] }>) => {
-      state.nodes = action.payload.nodes
+      state.nodes = action.payload.nodes.map(node => ({
+        ...node,
+        isCollapsed: node.isCollapsed || false,
+        hidden: false
+      }))
       state.edges = action.payload.edges
     },
     selectNode: (state, action: PayloadAction<string | null>) => {
@@ -52,19 +57,24 @@ const workflowSlice = createSlice({
     toggleNodeCollapse: (state, action: PayloadAction<string>) => {
       const node = state.nodes.find((n) => n.id === action.payload)
       if (node) {
+        const wasCollapsed = node.isCollapsed
         node.isCollapsed = !node.isCollapsed
-
+        
+        // Get all descendants
         const hiddenSet = getDescendantIds(node.id, state.edges)
-
-        // Add animation effect by delaying the hiding
-        setTimeout(() => {
-          for (const childId of hiddenSet) {
-            const childNode = state.nodes.find((n) => n.id === childId)
-            if (childNode) {
-              childNode.hidden = node.isCollapsed
+        
+        // Update visibility of descendants
+        state.nodes.forEach(n => {
+          if (hiddenSet.has(n.id)) {
+            if (wasCollapsed) {
+              // If node was previously collapsed, show descendants
+              n.hidden = false
+            } else {
+              // If node is now collapsing, hide descendants
+              n.hidden = true
             }
           }
-        }, node.isCollapsed ? 300 : 0)
+        })
       }
     },
     addNode: (state, action: PayloadAction<WorkflowNodeData>) => {

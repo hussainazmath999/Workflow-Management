@@ -57,7 +57,7 @@ const WorkflowCanvasInternal: React.FC = () => {
 
   useEffect(() => {
     const mappedNodes: Node[] = workflow.nodes
-      .filter((node) => !node.hidden)
+      .filter((node) => !node.hidden) // Only show non-hidden nodes
       .map((node) => ({
         id: node.id,
         type: node.type,
@@ -76,8 +76,9 @@ const WorkflowCanvasInternal: React.FC = () => {
 
     const mappedEdges: Edge[] = workflow.edges
       .filter((edge) => {
-        const targetNode = workflow.nodes.find((n) => n.id === edge.target)
-        return !targetNode?.hidden
+        const sourceNode = workflow.nodes.find(n => n.id === edge.source)
+        const targetNode = workflow.nodes.find(n => n.id === edge.target)
+        return !sourceNode?.hidden && !targetNode?.hidden
       })
       .map((edge) => ({
         id: edge.id,
