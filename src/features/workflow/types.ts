@@ -5,9 +5,9 @@ export interface WorkflowNodeData {
   label: string
   type: NodeType
   config: Record<string, any>
-    position: { x: number; y: number } 
+  position: { x: number; y: number }
   isCollapsed?: boolean
-  hidden?:boolean
+  hidden?: boolean
 }
 
 export interface WorkflowEdge {
@@ -15,7 +15,9 @@ export interface WorkflowEdge {
   source: string
   target: string
   sourceHandle?: string
-    label?: string;
+  label?: string;
+  animated?: boolean;
+  style?: React.CSSProperties;
 }
 
 export interface WorkflowState {

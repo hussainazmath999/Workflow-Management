@@ -14,3 +14,6 @@ export function loadWorkflowFromStorage(): { nodes: WorkflowNodeData[]; edges: W
 export function clearWorkflowStorage() {
   localStorage.removeItem(STORAGE_KEY)
 }
+
+// This is now just an alias for loadWorkflowFromStorage
+export const getSavedWorkflow = loadWorkflowFromStorage

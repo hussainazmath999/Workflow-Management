@@ -1,7 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit' // Add type-only import
+import type { PayloadAction } from '@reduxjs/toolkit'
 import type { WorkflowState, WorkflowNodeData, WorkflowEdge } from './types'
+import { sampleNodes, sampleEdges } from './sampleWorkflow'
+import { loadWorkflowFromStorage } from '../../utils/storage'
 
+// Utility to collect all descendant node IDs
 function getDescendantIds(startId: string, edges: WorkflowEdge[]): Set<string> {
   const descendants = new Set<string>()
   const queue = [startId]
@@ -9,7 +12,7 @@ function getDescendantIds(startId: string, edges: WorkflowEdge[]): Set<string> {
   while (queue.length > 0) {
     const current = queue.shift()
     if (!current) continue
-    
+
     for (const edge of edges) {
       if (edge.source === current) {
         if (!descendants.has(edge.target)) {
@@ -23,6 +26,7 @@ function getDescendantIds(startId: string, edges: WorkflowEdge[]): Set<string> {
   return descendants
 }
 
+// Initial state
 const initialState: WorkflowState = {
   nodes: [],
   edges: [],
@@ -59,20 +63,12 @@ const workflowSlice = createSlice({
       if (node) {
         const wasCollapsed = node.isCollapsed
         node.isCollapsed = !node.isCollapsed
-        
-        // Get all descendants
+
         const hiddenSet = getDescendantIds(node.id, state.edges)
-        
-        // Update visibility of descendants
+
         state.nodes.forEach(n => {
           if (hiddenSet.has(n.id)) {
-            if (wasCollapsed) {
-              // If node was previously collapsed, show descendants
-              n.hidden = false
-            } else {
-              // If node is now collapsing, hide descendants
-              n.hidden = true
-            }
+            n.hidden = !wasCollapsed
           }
         })
       }
@@ -87,6 +83,26 @@ const workflowSlice = createSlice({
       state.nodes = state.nodes.filter(n => n.id !== action.payload)
       state.edges = state.edges.filter(e => e.source !== action.payload && e.target !== action.payload)
     },
+
+    //  RELOAD WORKFLOW FROM LOCAL STORAGE
+    resetToSaved: (state) => {
+      const stored = loadWorkflowFromStorage()
+      if (stored) {
+        state.nodes = stored.nodes.map(n => ({ ...n, hidden: false, isCollapsed: n.isCollapsed || false }))
+        state.edges = stored.edges
+      }
+    },
+
+    //  CLEAR WORKFLOW TO EMPTY STATE
+    resetToInitial: () => {
+      return { ...initialState, nodes: sampleNodes, edges: sampleEdges }
+    },
+
+    //  LOAD SAMPLE WORKFLOW
+    resetToSample: (state) => {
+      state.nodes = sampleNodes.map(n => ({ ...n, hidden: false, isCollapsed: n.isCollapsed || false }))
+      state.edges = sampleEdges
+    }
   },
 })
 
@@ -99,6 +115,9 @@ export const {
   addNode,
   addEdge,
   deleteNode,
+  resetToInitial,
+  resetToSaved,
+  resetToSample
 } = workflowSlice.actions
 
 export default workflowSlice.reducer
