@@ -20,7 +20,7 @@ import TerminalNode from './nodes/TerminalNode'
 import ConfigDrawer from './ConfigDrawer'
 import NodePopover from './NodePopover'
 import { Box, Button, FormControlLabel, Switch, Chip, Typography, AppBar, Toolbar } from '@mui/material'
-import { Save, Replay, Delete, Settings } from '@mui/icons-material'
+import { Save, Replay, Delete } from '@mui/icons-material'
 
 const nodeTypes = {
   start: StartNode,
